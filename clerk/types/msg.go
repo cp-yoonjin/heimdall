@@ -21,6 +21,12 @@ type MsgEventRecord struct {
 	ChainID         string                `json:"bor_chain_id"`
 }
 
+// TODO [hyj] StateMsgEventRecord
+type StateMsgEventRecord struct {
+	ID   uint64         `json:"id"`
+	Data types.HexBytes `json:"data"`
+}
+
 var _ sdk.Msg = MsgEventRecord{}
 
 // NewMsgEventRecord - construct state msg
@@ -44,6 +50,17 @@ func NewMsgEventRecord(
 		ContractAddress: contractAddress,
 		Data:            data,
 		ChainID:         chainID,
+	}
+}
+
+// TODO [hyj] NewStateMsgEventRecord
+func NewStateMsgEventRecord(
+	id uint64,
+	data types.HexBytes,
+) StateMsgEventRecord {
+	return StateMsgEventRecord{
+		ID:   id,
+		Data: data,
 	}
 }
 

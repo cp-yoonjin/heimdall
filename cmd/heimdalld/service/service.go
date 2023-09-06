@@ -211,6 +211,7 @@ func NewHeimdallService(pCtx context.Context, args []string) {
 }
 
 func getNewApp(serverCtx *server.Context) func(logger log.Logger, db dbm.DB, storeTracer io.Writer) abci.Application {
+	logger.Info("[yj log] getNewApp", serverCtx.Config)
 	return func(logger log.Logger, db dbm.DB, storeTracer io.Writer) abci.Application {
 		// init heimdall config
 		helper.InitHeimdallConfig("")
@@ -264,6 +265,7 @@ which accepts a path for the resulting pprof file.
 			}
 
 			ctx.Logger.Info("starting ABCI with Tendermint")
+			ctx.Logger.Info("1\n")
 
 			startRestServer, _ := cmd.Flags().GetBool(helper.RestServerFlag)
 			startBridge, _ := cmd.Flags().GetBool(helper.BridgeFlag)
@@ -426,7 +428,7 @@ func startInProcess(cmd *cobra.Command, shutdownCtx context.Context, ctx *server
 	if err != nil {
 		return fmt.Errorf("failed to load or gen node key: %s", err)
 	}
-
+	fmt.Printf()
 	server.UpgradeOldPrivValFile(cfg)
 
 	// create & start tendermint node
@@ -440,6 +442,7 @@ func startInProcess(cmd *cobra.Command, shutdownCtx context.Context, ctx *server
 		node.DefaultMetricsProvider(cfg.Instrumentation),
 		ctx.Logger.With("module", "node"),
 	)
+
 	if err != nil {
 		return fmt.Errorf("failed to create new node: %s", err)
 	}

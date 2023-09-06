@@ -33,6 +33,8 @@ import (
 	hmRest "github.com/maticnetwork/heimdall/types/rest"
 )
 
+var logger = helper.Logger.With("module", "bor/client/rest/query.go")
+
 type HeimdallSpanResultWithHeight struct {
 	Height int64
 	Result []byte
@@ -269,6 +271,8 @@ func spanHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 		if !ok {
 			return
 		}
+
+		logger.Info(fmt.Sprintf("[yj log] spanHandlerFn spanId: ", spanID))
 
 		var (
 			res            []byte

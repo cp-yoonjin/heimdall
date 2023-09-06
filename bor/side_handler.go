@@ -2,6 +2,7 @@ package bor
 
 import (
 	"bytes"
+	"fmt"
 	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -33,8 +34,11 @@ func NewSideTxHandler(k Keeper, contractCaller helper.IContractCaller) hmTypes.S
 
 // NewPostTxHandler returns a side handler for "span" type messages.
 func NewPostTxHandler(k Keeper, contractCaller helper.IContractCaller) hmTypes.PostTxHandler {
+	var logger = helper.Logger.With("module", "bor/side_handler")
+	logger.Info(fmt.Sprintf("[yj log] NewPostTxHandler \n"))
 	return func(ctx sdk.Context, msg sdk.Msg, sideTxResult abci.SideTxResultType) sdk.Result {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
+		logger.Info(fmt.Sprintf("[yj log] NewPostTxHandler ------ ctx.WithEventManager \n"))
 		switch msg := msg.(type) {
 		case types.MsgProposeSpan:
 			return PostHandleMsgEventSpan(ctx, k, msg, sideTxResult)

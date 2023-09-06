@@ -40,7 +40,6 @@ func heimdallInit(_ *server.Context, cdc *codec.Codec, initConfig *initHeimdallC
 	conf := helper.GetDefaultHeimdallConfig()
 	conf.Chain = initConfig.chain
 	WriteDefaultHeimdallConfig(filepath.Join(config.RootDir, "config/heimdall-config.toml"), conf)
-
 	nodeID, valPubKey, _, err := InitializeNodeValidatorFiles(config)
 	if err != nil {
 		return err
@@ -96,6 +95,8 @@ func heimdallInit(_ *server.Context, cdc *codec.Codec, initConfig *initHeimdallC
 
 	vals := []*hmTypes.Validator{validator}
 	validatorSet := hmTypes.NewValidatorSet(vals)
+
+	logger.Info(fmt.Sprintf("[yj log] heimdallInit validatorSet v: %v, validatorSet s: %s \n", validatorSet, validatorSet))
 
 	dividendAccounts := []hmTypes.DividendAccount{dividendAccount}
 
