@@ -2,7 +2,6 @@ package app
 
 import (
 	"fmt"
-
 	bam "github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -26,17 +25,17 @@ import (
 	"github.com/maticnetwork/heimdall/clerk"
 	clerkTypes "github.com/maticnetwork/heimdall/clerk/types"
 	"github.com/maticnetwork/heimdall/common"
-	gov "github.com/maticnetwork/heimdall/gov"
-	govTypes "github.com/maticnetwork/heimdall/gov/types"
+	// gov "github.com/maticnetwork/heimdall/gov"
+	// govTypes "github.com/maticnetwork/heimdall/gov/types"
 	"github.com/maticnetwork/heimdall/helper"
 	"github.com/maticnetwork/heimdall/params"
-	paramsClient "github.com/maticnetwork/heimdall/params/client"
+	// paramsClient "github.com/maticnetwork/heimdall/params/client"
 	"github.com/maticnetwork/heimdall/params/subspace"
 	paramsTypes "github.com/maticnetwork/heimdall/params/types"
 	"github.com/maticnetwork/heimdall/sidechannel"
 	sidechannelTypes "github.com/maticnetwork/heimdall/sidechannel/types"
-	"github.com/maticnetwork/heimdall/slashing"
-	slashingTypes "github.com/maticnetwork/heimdall/slashing/types"
+	// "github.com/maticnetwork/heimdall/slashing"
+	// slashingTypes "github.com/maticnetwork/heimdall/slashing/types"
 	"github.com/maticnetwork/heimdall/staking"
 	stakingTypes "github.com/maticnetwork/heimdall/staking/types"
 	"github.com/maticnetwork/heimdall/supply"
@@ -72,14 +71,14 @@ var (
 		bor.AppModuleBasic{},
 		clerk.AppModuleBasic{},
 		topup.AppModuleBasic{},
-		slashing.AppModuleBasic{},
-		gov.NewAppModuleBasic(paramsClient.ProposalHandler),
+		// slashing.AppModuleBasic{},
+		// gov.NewAppModuleBasic(paramsClient.ProposalHandler),
 	)
 
 	// module account permissions
 	maccPerms = map[string][]string{
 		authTypes.FeeCollectorName: nil,
-		govTypes.ModuleName:        {},
+		// govTypes.ModuleName:        {},
 	}
 )
 
@@ -103,14 +102,14 @@ type HeimdallApp struct {
 	AccountKeeper     auth.AccountKeeper
 	BankKeeper        bank.Keeper
 	SupplyKeeper      supply.Keeper
-	GovKeeper         gov.Keeper
-	ChainKeeper       chainmanager.Keeper
-	CheckpointKeeper  checkpoint.Keeper
-	StakingKeeper     staking.Keeper
-	BorKeeper         bor.Keeper
-	ClerkKeeper       clerk.Keeper
-	TopupKeeper       topup.Keeper
-	SlashingKeeper    slashing.Keeper
+	// GovKeeper         gov.Keeper
+	ChainKeeper      chainmanager.Keeper
+	CheckpointKeeper checkpoint.Keeper
+	StakingKeeper    staking.Keeper
+	BorKeeper        bor.Keeper
+	ClerkKeeper      clerk.Keeper
+	TopupKeeper      topup.Keeper
+	// SlashingKeeper    slashing.Keeper
 
 	// param keeper
 	ParamsKeeper params.Keeper
@@ -176,7 +175,7 @@ func (d ModuleCommunicator) SendCoins(ctx sdk.Context, fromAddr types.HeimdallAd
 
 // CreateValidatorSigningInfo used by slashing module
 func (d ModuleCommunicator) CreateValidatorSigningInfo(ctx sdk.Context, valID types.ValidatorID, valSigningInfo types.ValidatorSigningInfo) {
-	d.App.SlashingKeeper.SetValidatorSigningInfo(ctx, valID, valSigningInfo)
+	// d.App.SlashingKeeper.SetValidatorSigningInfo(ctx, valID, valSigningInfo)
 }
 
 //
@@ -206,10 +205,10 @@ func NewHeimdallApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.Ba
 		authTypes.StoreKey,
 		bankTypes.StoreKey,
 		supplyTypes.StoreKey,
-		govTypes.StoreKey,
+		// govTypes.StoreKey,
 		chainmanagerTypes.StoreKey,
 		stakingTypes.StoreKey,
-		slashingTypes.StoreKey,
+		// slashingTypes.StoreKey,
 		checkpointTypes.StoreKey,
 		borTypes.StoreKey,
 		clerkTypes.StoreKey,
@@ -235,10 +234,10 @@ func NewHeimdallApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.Ba
 	app.subspaces[authTypes.ModuleName] = app.ParamsKeeper.Subspace(authTypes.DefaultParamspace)
 	app.subspaces[bankTypes.ModuleName] = app.ParamsKeeper.Subspace(bankTypes.DefaultParamspace)
 	app.subspaces[supplyTypes.ModuleName] = app.ParamsKeeper.Subspace(supplyTypes.DefaultParamspace)
-	app.subspaces[govTypes.ModuleName] = app.ParamsKeeper.Subspace(govTypes.DefaultParamspace).WithKeyTable(govTypes.ParamKeyTable())
+	// app.subspaces[govTypes.ModuleName] = app.ParamsKeeper.Subspace(govTypes.DefaultParamspace).WithKeyTable(govTypes.ParamKeyTable())
 	app.subspaces[chainmanagerTypes.ModuleName] = app.ParamsKeeper.Subspace(chainmanagerTypes.DefaultParamspace)
 	app.subspaces[stakingTypes.ModuleName] = app.ParamsKeeper.Subspace(stakingTypes.DefaultParamspace)
-	app.subspaces[slashingTypes.ModuleName] = app.ParamsKeeper.Subspace(slashingTypes.DefaultParamspace)
+	// app.subspaces[slashingTypes.ModuleName] = app.ParamsKeeper.Subspace(slashingTypes.DefaultParamspace)
 	app.subspaces[checkpointTypes.ModuleName] = app.ParamsKeeper.Subspace(checkpointTypes.DefaultParamspace)
 	app.subspaces[borTypes.ModuleName] = app.ParamsKeeper.Subspace(borTypes.DefaultParamspace)
 	app.subspaces[clerkTypes.ModuleName] = app.ParamsKeeper.Subspace(clerkTypes.DefaultParamspace)
@@ -301,14 +300,16 @@ func NewHeimdallApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.Ba
 		moduleCommunicator,
 	)
 
-	app.SlashingKeeper = slashing.NewKeeper(
-		app.cdc,
-		keys[slashingTypes.StoreKey], // target store
-		app.StakingKeeper,
-		app.subspaces[slashingTypes.ModuleName],
-		common.DefaultCodespace,
-		app.ChainKeeper,
-	)
+	/*
+		app.SlashingKeeper = slashing.NewKeeper(
+			app.cdc,
+			keys[slashingTypes.StoreKey], // target store
+			app.StakingKeeper,
+			app.subspaces[slashingTypes.ModuleName],
+			common.DefaultCodespace,
+			app.ChainKeeper,
+		)
+	*/
 
 	// bank keeper
 	app.BankKeeper = bank.NewKeeper(
@@ -333,21 +334,23 @@ func NewHeimdallApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.Ba
 	// logger.Info(fmt.Sprintf("[yj log] NewHeimdallApp app: %v \n", app))
 
 	// register the proposal types
-	govRouter := gov.NewRouter()
-	govRouter.
-		AddRoute(govTypes.RouterKey, govTypes.ProposalHandler).
-		AddRoute(paramsTypes.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper))
+	/*
+		govRouter := gov.NewRouter()
+		govRouter.
+			AddRoute(govTypes.RouterKey, govTypes.ProposalHandler).
+			AddRoute(paramsTypes.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper))
 
-	// logger.Info(fmt.Sprintf("[yj log] NewHeimdallApp govRouter: %v \n", govRouter))
-	app.GovKeeper = gov.NewKeeper(
-		app.cdc,
-		keys[govTypes.StoreKey],
-		app.subspaces[govTypes.ModuleName],
-		app.SupplyKeeper,
-		app.StakingKeeper,
-		govTypes.DefaultCodespace,
-		govRouter,
-	)
+		// logger.Info(fmt.Sprintf("[yj log] NewHeimdallApp govRouter: %v \n", govRouter))
+		app.GovKeeper = gov.NewKeeper(
+			app.cdc,
+			keys[govTypes.StoreKey],
+			app.subspaces[govTypes.ModuleName],
+			app.SupplyKeeper,
+			app.StakingKeeper,
+			govTypes.DefaultCodespace,
+			govRouter,
+		)
+	*/
 
 	// logger.Info(fmt.Sprintf("[yj log] NewHeimdallApp app.GovKeeper: %v \n", app.GovKeeper))
 
@@ -403,10 +406,10 @@ func NewHeimdallApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.Ba
 		}),
 		bank.NewAppModule(app.BankKeeper, &app.caller),
 		supply.NewAppModule(app.SupplyKeeper, &app.caller),
-		gov.NewAppModule(app.GovKeeper, app.SupplyKeeper),
+		// gov.NewAppModule(app.GovKeeper, app.SupplyKeeper),
 		chainmanager.NewAppModule(app.ChainKeeper, &app.caller),
 		staking.NewAppModule(app.StakingKeeper, &app.caller),
-		slashing.NewAppModule(app.SlashingKeeper, app.StakingKeeper, &app.caller),
+		// slashing.NewAppModule(app.SlashingKeeper, app.StakingKeeper, &app.caller),
 		checkpoint.NewAppModule(app.CheckpointKeeper, app.StakingKeeper, app.TopupKeeper, &app.caller),
 		bor.NewAppModule(app.BorKeeper, &app.caller),
 		clerk.NewAppModule(app.ClerkKeeper, &app.caller),
@@ -419,11 +422,11 @@ func NewHeimdallApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.Ba
 		sidechannelTypes.ModuleName,
 		authTypes.ModuleName,
 		bankTypes.ModuleName,
-		govTypes.ModuleName,
+		// govTypes.ModuleName,
 		chainmanagerTypes.ModuleName,
 		supplyTypes.ModuleName,
 		stakingTypes.ModuleName,
-		slashingTypes.ModuleName,
+		// slashingTypes.ModuleName,
 		checkpointTypes.ModuleName,
 		borTypes.ModuleName,
 		clerkTypes.ModuleName,
@@ -464,7 +467,7 @@ func NewHeimdallApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.Ba
 			supplyTypes.AccountProcessor,
 		}),
 
-		slashing.NewAppModule(app.SlashingKeeper, app.StakingKeeper, &app.caller),
+		// slashing.NewAppModule(app.SlashingKeeper, app.StakingKeeper, &app.caller),
 		chainmanager.NewAppModule(app.ChainKeeper, &app.caller),
 		topup.NewAppModule(app.TopupKeeper, &app.caller),
 		staking.NewAppModule(app.StakingKeeper, &app.caller),
