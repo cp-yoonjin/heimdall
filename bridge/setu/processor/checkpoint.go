@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"math"
 	"math/big"
 	"strconv"
@@ -236,6 +237,8 @@ func (cp *CheckpointProcessor) sendCheckpointToRootchain(eventBytes string, bloc
 
 	if shouldSend && isCurrentProposer {
 		txHash := common.FromHex(txHash)
+		cp.Logger.Info(fmt.Sprintf("[yj log] checkpointContext: %v, startBlock: %v, endBlock: %v, blockHeight: %v", checkpointContext, startBlock, endBlock, blockHeight))
+
 		if err := cp.createAndSendCheckpointToRootchain(checkpointContext, startBlock, endBlock, blockHeight, txHash); err != nil {
 			cp.Logger.Error("Error sending checkpoint to rootchain", "error", err)
 			return err

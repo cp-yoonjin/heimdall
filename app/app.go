@@ -192,6 +192,8 @@ func NewHeimdallApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.Ba
 	config := sdk.GetConfig()
 	config.Seal()
 
+	// logger.Info(fmt.Sprintf("[yj log] NewHeimdallApp config: %v", config))
+
 	// base app
 	bApp := bam.NewBaseApp(AppName, logger, db, authTypes.DefaultTxDecoder(cdc), baseAppOptions...)
 	bApp.SetCommitMultiStoreTracer(nil)
@@ -215,6 +217,8 @@ func NewHeimdallApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.Ba
 		paramsTypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramsTypes.TStoreKey)
+
+	// logger.Info(fmt.Sprintf("[yj log] NewHeimdallApp keys: %v", keys))
 
 	// create heimdall app
 	var app = &HeimdallApp{
@@ -245,10 +249,13 @@ func NewHeimdallApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.Ba
 
 	contractCallerObj, err := helper.NewContractCaller()
 	if err != nil {
+		//logger.Error(fmt.Sprintf("[yj log] NewHeimdallApp contractCallerObj: %v, err: %v \n", contractCallerObj, err))
 		cmn.Exit(err.Error())
 	}
 
 	app.caller = contractCallerObj
+
+	// logger.Info(fmt.Sprintf("[yj log] NewHeimdallApp contractCallerObj: %v \n", contractCallerObj))
 
 	//
 	// module communicator
@@ -323,12 +330,15 @@ func NewHeimdallApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.Ba
 		app.BankKeeper,
 	)
 
+	// logger.Info(fmt.Sprintf("[yj log] NewHeimdallApp app: %v \n", app))
+
 	// register the proposal types
 	govRouter := gov.NewRouter()
 	govRouter.
 		AddRoute(govTypes.RouterKey, govTypes.ProposalHandler).
 		AddRoute(paramsTypes.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper))
 
+	// logger.Info(fmt.Sprintf("[yj log] NewHeimdallApp govRouter: %v \n", govRouter))
 	app.GovKeeper = gov.NewKeeper(
 		app.cdc,
 		keys[govTypes.StoreKey],
@@ -338,6 +348,8 @@ func NewHeimdallApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.Ba
 		govTypes.DefaultCodespace,
 		govRouter,
 	)
+
+	// logger.Info(fmt.Sprintf("[yj log] NewHeimdallApp app.GovKeeper: %v \n", app.GovKeeper))
 
 	app.CheckpointKeeper = checkpoint.NewKeeper(
 		app.cdc,
@@ -349,6 +361,8 @@ func NewHeimdallApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.Ba
 		moduleCommunicator,
 	)
 
+	// logger.Info(fmt.Sprintf("[yj log] NewHeimdallApp app.CheckpointKeeper: %v \n", app.CheckpointKeeper))
+
 	app.BorKeeper = bor.NewKeeper(
 		app.cdc,
 		keys[borTypes.StoreKey], // target store
@@ -358,6 +372,8 @@ func NewHeimdallApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.Ba
 		app.StakingKeeper,
 		app.caller,
 	)
+
+	// logger.Info(fmt.Sprintf("[yj log] NewHeimdallApp app.BorKeeper: %v \n", app.BorKeeper))
 
 	app.ClerkKeeper = clerk.NewKeeper(
 		app.cdc,
@@ -419,9 +435,14 @@ func NewHeimdallApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.Ba
 
 	// side router
 	app.sideRouter = types.NewSideRouter()
+	// logger.Info(fmt.Sprintf("[yj log] sideRouter ----------- %v \n", app.sideRouter))
 	for _, m := range app.mm.Modules {
+		// logger.Info(fmt.Sprintf("[yj log] sideRouter ----------- m.Route() == \"\" \n"))
 		if m.Route() != "" {
+			// logger.Info(fmt.Sprintf("[yj log] sideRouter ----------- m.Route() != \"\" \n"))
+			// logger.Info(fmt.Sprintf("[yj log] NewHeimdallApp hmModule.SideModule ----------- %v \n", m.(hmModule.SideModule)))
 			if sm, ok := m.(hmModule.SideModule); ok {
+				// logger.Info(fmt.Sprintf("[yj log] NewHeimdallApp SideModule ----------- sm: %v \n", sm))
 				app.sideRouter.AddRoute(m.Route(), &types.SideHandlers{
 					SideTxHandler: sm.NewSideTxHandler(),
 					PostTxHandler: sm.NewPostTxHandler(),
@@ -431,6 +452,8 @@ func NewHeimdallApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.Ba
 	}
 
 	app.sideRouter.Seal()
+
+	logger.Info(fmt.Sprintf("[yj log] sideRouter ----------- app.sideRouter: %v \n", app.sideRouter))
 
 	// create the simulation manager and define the order of the modules for deterministic simulations
 	//
@@ -470,6 +493,7 @@ func NewHeimdallApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.Ba
 	// side-tx processor
 	app.SetPostDeliverTxHandler(app.PostDeliverTxHandler)
 	app.SetBeginSideBlocker(app.BeginSideBlocker)
+	logger.Info(fmt.Sprintf("[yj log] NewHeimdallApp ------ SetBeginSideBlocker BeginSideBlocker \n"))
 	app.SetDeliverSideTxHandler(app.DeliverSideTxHandler)
 
 	// load latest version

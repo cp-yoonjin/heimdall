@@ -40,14 +40,19 @@ func heimdallInit(_ *server.Context, cdc *codec.Codec, initConfig *initHeimdallC
 	conf := helper.GetDefaultHeimdallConfig()
 	conf.Chain = initConfig.chain
 	WriteDefaultHeimdallConfig(filepath.Join(config.RootDir, "config/heimdall-config.toml"), conf)
-
+	logger.Info(fmt.Sprintf("[yj log] config. %s", config))
+	// logger.Info(fmt.Sprintf("[yj log] config.RootDir. %s", config.RootDir))
 	nodeID, valPubKey, _, err := InitializeNodeValidatorFiles(config)
 	if err != nil {
 		return err
 	}
 
+	// logger.Info(fmt.Sprintf("[yj log] nodeId: %s, valPubKey: %s", nodeID, valPubKey))
+
 	// do not execute init if forceInit is false and genesis.json already exists (or we do not have permission to write to file)
 	writeGenesis := initConfig.forceInit
+
+	// logger.Info(fmt.Sprintf("[yj log] writeGenesis: %s", writeGenesis))
 
 	if !writeGenesis {
 		// When not forcing, check if genesis file exists
@@ -57,7 +62,9 @@ func heimdallInit(_ *server.Context, cdc *codec.Codec, initConfig *initHeimdallC
 
 			writeGenesis = true
 		} else if err == nil {
+			//logger.Info(fmt.Sprintf("[yj log] genesis  %v, blahblah 1\n", config.GenesisFile()))
 			logger.Info(fmt.Sprintf("Found genesis file %v, skipping writing genesis file\n", config.GenesisFile()))
+			//logger.Info(fmt.Sprintf("[yj log] genesis  %v, blahblah 2\n", config.GenesisFile()))
 		} else {
 			logger.Error(fmt.Sprintf("Error checking if genesis file %v exists: %v\n", config.GenesisFile(), err))
 			return err
@@ -66,7 +73,10 @@ func heimdallInit(_ *server.Context, cdc *codec.Codec, initConfig *initHeimdallC
 		logger.Info(fmt.Sprintf("Force writing genesis file to %v\n", config.GenesisFile()))
 	}
 
+	// logger.Info(fmt.Sprintf("[yj log] conf: %s \n", conf))
+
 	if writeGenesis {
+		// logger.Info(fmt.Sprintf("[yj log] NOoooooOOooooOOOoooo"))
 		genesisCreated, err := helper.WriteGenesisFile(initConfig.chain, config.GenesisFile(), cdc)
 		if err != nil {
 			return err
@@ -83,8 +93,12 @@ func heimdallInit(_ *server.Context, cdc *codec.Codec, initConfig *initHeimdallC
 		chainID = fmt.Sprintf("heimdall-%v", common.RandStr(6))
 	}
 
+	//logger.Info(fmt.Sprintf("[yj log] chainId: %s",chainID))
+
 	// get pubkey
 	newPubkey := CryptoKeyToPubkey(valPubKey)
+
+	//logger.Info(fmt.Sprintf("[yj log] valPubKey: %s", valPubKey))
 
 	// create validator account
 	validator := hmTypes.NewValidator(hmTypes.NewValidatorID(uint64(initConfig.validatorID)),
@@ -96,6 +110,10 @@ func heimdallInit(_ *server.Context, cdc *codec.Codec, initConfig *initHeimdallC
 
 	vals := []*hmTypes.Validator{validator}
 	validatorSet := hmTypes.NewValidatorSet(vals)
+
+	// logger.Info(fmt.Sprintf("[yj log] validatorSet: %s", validatorSet))
+
+	logger.Info(fmt.Sprintf("[yj log] heimdallInit validatorSet v: %v, validatorSet s: %s \n", validatorSet, validatorSet))
 
 	dividendAccounts := []hmTypes.DividendAccount{dividendAccount}
 
@@ -160,6 +178,8 @@ func heimdallInit(_ *server.Context, cdc *codec.Codec, initConfig *initHeimdallC
 	}
 
 	fmt.Fprintf(os.Stderr, "%s\n", string(out))
+
+	// logger.Info(fmt.Sprintf("[yj log] config.GenesisFile: %s, chainId: %s", config.GenesisFile(), chainID))
 
 	return writeGenesisFile(tmtime.Now(), config.GenesisFile(), chainID, appStateJSON)
 }

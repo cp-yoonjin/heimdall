@@ -2,6 +2,7 @@ package bor
 
 import (
 	"bytes"
+	"fmt"
 	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -16,8 +17,11 @@ import (
 	tmTypes "github.com/tendermint/tendermint/types"
 )
 
+var logger = helper.Logger.With("module", "bor/side_handler")
+
 // NewSideTxHandler returns a side handler for "span" type messages.
 func NewSideTxHandler(k Keeper, contractCaller helper.IContractCaller) hmTypes.SideTxHandler {
+	logger.Info(fmt.Sprintf("[yj log] NewSideTxHandler \n"))
 	return func(ctx sdk.Context, msg sdk.Msg) abci.ResponseDeliverSideTx {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
 		switch msg := msg.(type) {
@@ -33,8 +37,10 @@ func NewSideTxHandler(k Keeper, contractCaller helper.IContractCaller) hmTypes.S
 
 // NewPostTxHandler returns a side handler for "span" type messages.
 func NewPostTxHandler(k Keeper, contractCaller helper.IContractCaller) hmTypes.PostTxHandler {
+	logger.Info(fmt.Sprintf("[yj log] NewPostTxHandler \n"))
 	return func(ctx sdk.Context, msg sdk.Msg, sideTxResult abci.SideTxResultType) sdk.Result {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
+		logger.Info(fmt.Sprintf("[yj log] NewPostTxHandler ------ ctx.WithEventManager \n"))
 		switch msg := msg.(type) {
 		case types.MsgProposeSpan:
 			return PostHandleMsgEventSpan(ctx, k, msg, sideTxResult)
@@ -109,6 +115,8 @@ func PostHandleMsgEventSpan(ctx sdk.Context, k Keeper, msg types.MsgProposeSpan,
 		k.Logger(ctx).Debug("Skipping new span since side-tx didn't get yes votes")
 		return common.ErrSideTxValidation(k.Codespace()).Result()
 	}
+
+	logger.Info(fmt.Sprintf("[yj log] PostHandleMsgEventSpan \n"))
 
 	// check for replay
 	if k.HasSpan(ctx, msg.ID) {

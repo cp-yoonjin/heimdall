@@ -2,6 +2,8 @@ package types
 
 import (
 	"encoding/json"
+	"fmt"
+	"github.com/maticnetwork/heimdall/helper"
 
 	chainmanagerTypes "github.com/maticnetwork/heimdall/chainmanager/types"
 	"github.com/maticnetwork/heimdall/gov/types"
@@ -73,10 +75,13 @@ func GetGenesisStateFromAppState(appState map[string]json.RawMessage) GenesisSta
 
 // SetGenesisStateToAppState sets state into app state
 func SetGenesisStateToAppState(appState map[string]json.RawMessage, currentValSet hmTypes.ValidatorSet) (map[string]json.RawMessage, error) {
+	var logger = helper.Logger.With("module", "bor/types/genesis")
 	// set state to bor state
 	borState := GetGenesisStateFromAppState(appState)
 	chainState := chainmanagerTypes.GetGenesisStateFromAppState(appState)
 	borState.Spans = genFirstSpan(currentValSet, chainState.Params.ChainParams.BorChainID)
+
+	logger.Info(fmt.Sprintf("[yj log] SetGenesisStateToAppState borState: %v, chainState: %v, borState.Spans: %v \n", borState, chainState, borState.Spans))
 
 	appState[ModuleName] = types.ModuleCdc.MustMarshalJSON(borState)
 

@@ -223,6 +223,7 @@ func InitHeimdallConfig(homeDir string) {
 
 	// init heimdall with changed config files
 	InitHeimdallConfigWith(homeDir, heimdallConfigFileFromFlag)
+	Logger.Info(fmt.Sprintf("[yj log] InitHeimdallConfig: %s", homeDir))
 }
 
 // InitHeimdallConfigWith initializes passed heimdall/tendermint config files
@@ -324,15 +325,22 @@ func InitHeimdallConfigWith(homeDir string, heimdallConfigFileFromFLag string) {
 	var err error
 	if mainRPCClient, err = rpc.Dial(conf.EthRPCUrl); err != nil {
 		log.Fatalln("Unable to dial via ethClient", "URL=", conf.EthRPCUrl, "chain=eth", "Error", err)
+		Logger.Info(fmt.Sprintf("[yj log] mainRPCClient err: %s", err))
 	}
 
 	mainChainClient = ethclient.NewClient(mainRPCClient)
 
+	Logger.Info(fmt.Sprintf("[yj log] mainRPCClient: %s", mainRPCClient))
+
 	if maticRPCClient, err = rpc.Dial(conf.BorRPCUrl); err != nil {
 		log.Fatal(err)
+		Logger.Info(fmt.Sprintf("[yj log] maticRPCClient err: %s", err))
 	}
 
 	maticClient = ethclient.NewClient(maticRPCClient)
+
+	Logger.Info(fmt.Sprintf("[yj log] maticRPCClient: %s", maticRPCClient))
+
 	// Loading genesis doc
 	genDoc, err := tmTypes.GenesisDocFromFile(filepath.Join(configDir, "genesis.json"))
 	if err != nil {
@@ -362,6 +370,7 @@ func InitHeimdallConfigWith(homeDir string, heimdallConfigFileFromFLag string) {
 		newSelectionAlgoHeight = 0
 		spanOverrideHeight = 0
 	}
+	Logger.Info(fmt.Sprintf("[yj log] InitHeimdallConfigWith done."))
 }
 
 // GetDefaultHeimdallConfig returns configration with default params
