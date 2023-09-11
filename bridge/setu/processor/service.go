@@ -1,6 +1,8 @@
 package processor
 
 import (
+	"fmt"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/spf13/viper"
 	"github.com/tendermint/tendermint/libs/common"
@@ -68,12 +70,12 @@ func NewProcessorService(
 	clerkProcessor.BaseProcessor = *NewBaseProcessor(cdc, queueConnector, httpClient, txBroadcaster, "clerk", clerkProcessor)
 
 	// initialize span processor
-	spanProcessor := &SpanProcessor{}
-	spanProcessor.BaseProcessor = *NewBaseProcessor(cdc, queueConnector, httpClient, txBroadcaster, "span", spanProcessor)
+	//spanProcessor := &SpanProcessor{}
+	//spanProcessor.BaseProcessor = *NewBaseProcessor(cdc, queueConnector, httpClient, txBroadcaster, "span", spanProcessor)
 
 	// initialize slashing processor
-	slashingProcessor := NewSlashingProcessor(&contractCaller.StakingInfoABI)
-	slashingProcessor.BaseProcessor = *NewBaseProcessor(cdc, queueConnector, httpClient, txBroadcaster, "slashing", slashingProcessor)
+	//slashingProcessor := NewSlashingProcessor(&contractCaller.StakingInfoABI)
+	//slashingProcessor.BaseProcessor = *NewBaseProcessor(cdc, queueConnector, httpClient, txBroadcaster, "slashing", slashingProcessor)
 
 	//
 	// Select processors
@@ -89,8 +91,8 @@ func NewProcessorService(
 			stakingProcessor,
 			clerkProcessor,
 			feeProcessor,
-			spanProcessor,
-			slashingProcessor,
+			//spanProcessor,
+			//slashingProcessor,
 		)
 	} else {
 		for _, service := range onlyServices {
@@ -104,9 +106,11 @@ func NewProcessorService(
 			case "fee":
 				processorService.processors = append(processorService.processors, feeProcessor)
 			case "span":
-				processorService.processors = append(processorService.processors, spanProcessor)
+				fmt.Println("Removed span")
+				//processorService.processors = append(processorService.processors, spanProcessor)
 			case "slashing":
-				processorService.processors = append(processorService.processors, slashingProcessor)
+				fmt.Println("Removed slashing")
+				//processorService.processors = append(processorService.processors, slashingProcessor)
 			}
 		}
 	}
