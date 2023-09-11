@@ -1,7 +1,6 @@
 package broadcaster
 
 import (
-	"context"
 	"fmt"
 	"sync"
 	"time"
@@ -10,8 +9,6 @@ import (
 	cliContext "github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	bor "github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/core/types"
 
 	authTypes "github.com/maticnetwork/heimdall/auth/types"
 	"github.com/maticnetwork/heimdall/bridge/setu/util"
@@ -106,6 +103,7 @@ func (tb *TxBroadcaster) BroadcastToHeimdall(msg sdk.Msg, event interface{}) err
 }
 
 // BroadcastToMatic broadcast to matic
+/*
 func (tb *TxBroadcaster) BroadcastToMatic(msg bor.CallMsg) error {
 	tb.maticMutex.Lock()
 	defer tb.maticMutex.Unlock()
@@ -144,7 +142,7 @@ func (tb *TxBroadcaster) BroadcastToMatic(msg bor.CallMsg) error {
 	}
 
 	return nil
-}
+}*/
 
 // BroadcastToRootchain broadcast to rootchain
 func (tb *TxBroadcaster) BroadcastToRootchain() {}
