@@ -33,6 +33,8 @@ import (
 	hmRest "github.com/maticnetwork/heimdall/types/rest"
 )
 
+var logger = helper.Logger.With("module", "bor/client/rest/query.go")
+
 type HeimdallSpanResultWithHeight struct {
 	Height int64
 	Result []byte
@@ -258,17 +260,23 @@ type borSpanById struct {
 func spanHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		logger.Info(fmt.Sprintf("[yj log] spanHandlerFn spanId 0"))
 		if !ok {
 			return
 		}
 
+		logger.Info(fmt.Sprintf("[yj log] spanHandlerFn spanId 1"))
+
 		vars := mux.Vars(r)
 
+		logger.Info(fmt.Sprintf("[yj log] spanHandlerFn spanId 2"))
 		// get to address
 		spanID, ok := rest.ParseUint64OrReturnBadRequest(w, vars["id"])
 		if !ok {
 			return
 		}
+
+		logger.Info(fmt.Sprintf("[yj log] spanHandlerFn spanId: ", spanID))
 
 		var (
 			res            []byte
@@ -280,11 +288,15 @@ func spanHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 			loadSpanOverrides()
 		}
 
+		logger.Info(fmt.Sprintf("[yj log] spanHandlerFn spanId 3"))
+
 		if span, ok := spanOverrides[spanID]; ok {
 			res = span.Result
 			height = span.Height
 			spanOverridden = true
 		}
+
+		logger.Info(fmt.Sprintf("[yj log] spanHandlerFn spanId 4"))
 
 		if !spanOverridden {
 			// get query params

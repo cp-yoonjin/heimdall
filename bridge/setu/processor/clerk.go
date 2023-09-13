@@ -164,6 +164,26 @@ func (cp *ClerkProcessor) sendStateSyncedToHeimdall(eventName string, logBytes s
 			cp.Logger.Error("Error while broadcasting clerk Record to heimdall", "error", err)
 			return err
 		}
+
+		//TODO [hyj] send transaction -> childChainManager
+		//stateMsg := clerkTypes.NewStateMsgEventRecord(
+		//	event.Id.Uint64(),
+		//	event.Data,
+		//)
+
+		// state receive address
+		stateReceiveAddress := chainParams.StateReceiverAddress.EthAddress()
+		// state receive instance
+		stateReceiveInstance, err := cp.contractConnector.GetStateReceiverInstance(stateReceiveAddress)
+		if err != nil {
+			cp.Logger.Info("[sendStateSyncedToHeimdall] Error while creating state sender instance", "error", err)
+			return err
+		}
+
+		if err := cp.contractConnector.SendStateReceive(event.Id, event.Data, vLog.TxHash, stateReceiveAddress, stateReceiveInstance); err != nil {
+			cp.Logger.Info("[sendStateSyncedToHeimdall] Error submitting state to childchain", "error", err)
+			return err
+		}
 	}
 
 	return nil

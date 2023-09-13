@@ -211,12 +211,17 @@ func NewHeimdallService(pCtx context.Context, args []string) {
 }
 
 func getNewApp(serverCtx *server.Context) func(logger log.Logger, db dbm.DB, storeTracer io.Writer) abci.Application {
+	logger.Info(fmt.Sprintf("[yj log] service/service getNewApp config : %v", serverCtx.Config))
 	return func(logger log.Logger, db dbm.DB, storeTracer io.Writer) abci.Application {
 		// init heimdall config
 		helper.InitHeimdallConfig("")
+		logger.Info("[yj log] service/service getNewApp 1")
 		helper.UpdateTendermintConfig(serverCtx.Config, viper.GetViper())
+		logger.Info("[yj log] service/service getNewApp 2")
 		// create new heimdall app
 		hApp = app.NewHeimdallApp(logger, db, baseapp.SetPruning(store.NewPruningOptionsFromString(viper.GetString("pruning"))))
+
+		logger.Info(fmt.Sprintf("[yj log] service/service getNewApp hApp 3 : %v", hApp))
 
 		return hApp
 	}
@@ -265,10 +270,14 @@ which accepts a path for the resulting pprof file.
 
 			ctx.Logger.Info("starting ABCI with Tendermint")
 
+			ctx.Logger.Info("111111111\n")
+
 			startRestServer, _ := cmd.Flags().GetBool(helper.RestServerFlag)
 			startBridge, _ := cmd.Flags().GetBool(helper.BridgeFlag)
 
+			ctx.Logger.Info("22222222\n")
 			err := startInProcess(cmd, shutdownCtx, ctx, appCreator, cdc, startRestServer, startBridge)
+			ctx.Logger.Info("33333333\n")
 			return err
 		},
 		PreRun: func(cmd *cobra.Command, args []string) {
@@ -410,24 +419,36 @@ func startInProcess(cmd *cobra.Command, shutdownCtx context.Context, ctx *server
 		return fmt.Errorf("failed init heimdall: %s", err)
 	}
 
+	ctx.Logger.Info("[yj log] heimdallInit done.\n")
+
 	db, err := openDB(home)
 	if err != nil {
 		return fmt.Errorf("failed to open DB: %s", err)
 	}
+
+	ctx.Logger.Info("[yj log] openDB done.\n")
 
 	traceWriter, err := openTraceWriter(traceWriterFile)
 	if err != nil {
 		return fmt.Errorf("failed to open trace writer: %s", err)
 	}
 
+	ctx.Logger.Info("[yj log] traceWriter done.\n")
+
 	app := appCreator(ctx.Logger, db, traceWriter)
+
+	ctx.Logger.Info("[yj log] appCreator done.\n")
 
 	nodeKey, err := p2p.LoadOrGenNodeKey(cfg.NodeKeyFile())
 	if err != nil {
 		return fmt.Errorf("failed to load or gen node key: %s", err)
 	}
 
+	ctx.Logger.Info("[yj log] nodekey load done.\n")
+
 	server.UpgradeOldPrivValFile(cfg)
+
+	ctx.Logger.Info("[yj log] upgradeOldPriv done.\n")
 
 	// create & start tendermint node
 	tmNode, err := node.NewNode(
@@ -440,6 +461,21 @@ func startInProcess(cmd *cobra.Command, shutdownCtx context.Context, ctx *server
 		node.DefaultMetricsProvider(cfg.Instrumentation),
 		ctx.Logger.With("module", "node"),
 	)
+
+	ctx.Logger.Info("[yj log] NewNode create done.\n")
+
+	logger.Info(fmt.Sprintf("[yj log] tmNode.Config: %s", tmNode.Config()))
+
+	logger.Info(fmt.Sprintf("[yj log] tmNode.NodeInfo: %s", tmNode.NodeInfo()))
+
+	logger.Info(fmt.Sprintf("[yj log] cfg.PrivValidatorKeyFile(): %s", cfg.PrivValidatorKeyFile()))
+
+	logger.Info(fmt.Sprintf("[yj log] cfg.PrivValidatorStateFile(): %s", cfg.PrivValidatorStateFile()))
+
+	logger.Info(fmt.Sprintf("[yj log] cfg: %s", cfg))
+
+	logger.Info(fmt.Sprintf("[yj log] nodeKey: %s", nodeKey))
+
 	if err != nil {
 		return fmt.Errorf("failed to create new node: %s", err)
 	}
@@ -470,6 +506,8 @@ func startInProcess(cmd *cobra.Command, shutdownCtx context.Context, ctx *server
 		}
 	}
 
+	ctx.Logger.Info("[yj log] cpuProfile done.\n")
+
 	tracerProvider, traceCtx, _ := startOpenTracing(cmd)
 
 	// using group context makes sense in case that if one of
@@ -487,6 +525,8 @@ func startInProcess(cmd *cobra.Command, shutdownCtx context.Context, ctx *server
 		<-waitForREST
 	}
 
+	ctx.Logger.Info("[yj log] start rest server done.\n")
+
 	// start bridge
 	if startBridge {
 		bridgeCmd.AdjustBridgeDBValue(cmd, viper.GetViper())
@@ -495,6 +535,8 @@ func startInProcess(cmd *cobra.Command, shutdownCtx context.Context, ctx *server
 		})
 	}
 
+	ctx.Logger.Info("[yj log] start bridge done.\n")
+
 	// stop phase for Tendermint node
 	g.Go(func() error {
 		// wait here for interrupt signal or
@@ -502,6 +544,7 @@ func startInProcess(cmd *cobra.Command, shutdownCtx context.Context, ctx *server
 		<-gCtx.Done()
 		ctx.Logger.Info("exiting...")
 
+		ctx.Logger.Info("[yj log] start go!!!.\n")
 		if tracerProvider != nil {
 			if err := tracerProvider.Shutdown(*traceCtx); err == nil {
 				ctx.Logger.Info("Shutting Down OpenTelemetry")
@@ -526,6 +569,8 @@ func startInProcess(cmd *cobra.Command, shutdownCtx context.Context, ctx *server
 		ctx.Logger.Error("Error shutting down services", "Error", err)
 		return err
 	}
+
+	ctx.Logger.Info("fdsjklfjsklfjsdkfljdskfljdsklfjsdffdsjklsdjfksdfljk\n")
 
 	return nil
 }
@@ -664,7 +709,6 @@ func hostnameOrIP(i int) string {
 // populate persistent peers in config
 func populatePersistentPeersInConfigAndWriteIt(config *cfg.Config) {
 	persistentPeers := make([]string, totalValidators())
-
 	for i := 0; i < totalValidators(); i++ {
 		config.SetRoot(nodeDir(i))
 
@@ -675,6 +719,7 @@ func populatePersistentPeersInConfigAndWriteIt(config *cfg.Config) {
 
 		persistentPeers[i] = p2p.IDAddressString(nodeKey.ID(), fmt.Sprintf("%s:%d", hostnameOrIP(i), 26656))
 	}
+	logger.Info("[yj log] persistentPeers", persistentPeers)
 
 	persistentPeersList := strings.Join(persistentPeers, ",")
 
@@ -686,6 +731,7 @@ func populatePersistentPeersInConfigAndWriteIt(config *cfg.Config) {
 		// overwrite default config
 		cfg.WriteConfigFile(filepath.Join(nodeDir(i), "config", "config.toml"), config)
 	}
+	logger.Info("[yj log] config", config)
 }
 
 func getGenesisAccount(address []byte) authTypes.GenesisAccount {
@@ -759,8 +805,10 @@ func WriteDefaultHeimdallConfig(path string, conf helper.Configuration) {
 		logger.Info(fmt.Sprintf("Config file %s already exists. Skip writing default heimdall config.", path))
 	} else if errors.Is(err, os.ErrNotExist) {
 		helper.WriteConfigFile(path, &conf)
+		logger.Info(fmt.Sprintf("[yj log] else if. %s", path))
 	} else {
 		logger.Error("Error while checking for config file", "Error", err)
+		logger.Info(fmt.Sprintf("[yj log] else. %s", path))
 	}
 }
 

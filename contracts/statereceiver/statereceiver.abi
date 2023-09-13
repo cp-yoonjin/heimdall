@@ -52,6 +52,10 @@
     "internalType": "bytes",
     "name": "data",
     "type": "bytes"
+  }, {
+    "internalType": "bytes32",
+    "name": "txHash",
+    "type": "bytes32"
   }],
   "name": "onStateReceive",
   "outputs": [],

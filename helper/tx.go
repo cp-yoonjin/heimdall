@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"github.com/maticnetwork/heimdall/contracts/statereceiver"
 	"math/big"
 	"strings"
 
@@ -86,6 +87,35 @@ func GenerateAuthObj(client *ethclient.Client, address common.Address, data []by
 	return
 }
 
+// TODO [hyj] sendStateReceive()
+func (c *ContractCaller) SendStateReceive(id *big.Int, data []byte, txHash common.Hash, stateReceiveAddress common.Address, stateReceiveInstance *statereceiver.Statereceiver) (er error) {
+	msg, err := c.StateReceiverABI.Pack("onStateReceive", id, data, txHash)
+	if err != nil {
+		Logger.Error("[SendStateReceive] Unable to pack tx for onStateReceive", "error", err)
+		return err
+	}
+
+	auth, err := GenerateAuthObj(GetMaticClient(), stateReceiveAddress, msg)
+	if err != nil {
+		Logger.Error("[SendStateReceive] Unable to create auth object", "error", err)
+		return err
+	}
+
+	tx, err := stateReceiveInstance.OnStateReceive(auth, id, data, txHash)
+
+	Logger.Info(fmt.Sprintf("[SendStateReceive] tx: %v", tx))
+
+	if err != nil {
+		Logger.Error("[SendStateReceive] Error while sending state", "error", err)
+		return err
+	}
+
+	Logger.Info("[SendStateReceive] Sending state to childchain successfully", "txHash", tx.Hash().String())
+	Logger.Info("[SendStateReceive]", "HeimdalldTxHash", txHash.String())
+
+	return
+}
+
 // SendCheckpoint sends checkpoint to rootchain contract
 // todo return err
 func (c *ContractCaller) SendCheckpoint(signedData []byte, sigs [][3]*big.Int, rootChainAddress common.Address, rootChainInstance *rootchain.Rootchain) (er error) {
@@ -95,11 +125,15 @@ func (c *ContractCaller) SendCheckpoint(signedData []byte, sigs [][3]*big.Int, r
 		return err
 	}
 
+	Logger.Info(fmt.Sprintf("[yj log] SendCheckpoint1 data: %v", data))
+
 	auth, err := GenerateAuthObj(GetMainClient(), rootChainAddress, data)
 	if err != nil {
 		Logger.Error("Unable to create auth object", "error", err)
 		return err
 	}
+
+	Logger.Info(fmt.Sprintf("[yj log] SendCheckpoint2 auth: %v", auth))
 
 	s := make([]string, 0)
 	for i := 0; i < len(sigs); i++ {
@@ -112,6 +146,9 @@ func (c *ContractCaller) SendCheckpoint(signedData []byte, sigs [][3]*big.Int, r
 	)
 
 	tx, err := rootChainInstance.SubmitCheckpoint(auth, signedData, sigs)
+
+	Logger.Info(fmt.Sprintf("[yj log] SendCheckpoint3 tx: %v", tx))
+
 	if err != nil {
 		Logger.Error("Error while submitting checkpoint", "error", err)
 		return err

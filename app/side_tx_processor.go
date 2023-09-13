@@ -235,8 +235,9 @@ func (app *HeimdallApp) runTx(ctx sdk.Context, txBytes []byte, sideTxResult abci
 	return
 }
 
-/// runMsgs iterates through all the messages and executes them.
+// / runMsgs iterates through all the messages and executes them.
 func (app *HeimdallApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, sideTxResult abci.SideTxResultType) sdk.Result {
+	logger.Info(fmt.Sprintf("[yj log] runMsgs"))
 	data := make([]byte, 0, len(msgs))
 
 	var (
@@ -254,6 +255,7 @@ func (app *HeimdallApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, sideTxResult ab
 		msgRoute := msg.Route()
 
 		handler := app.sideRouter.GetRoute(msgRoute)
+		logger.Info(fmt.Sprintf("[yj log] runMsgs handler.PostTxHandler: %v", handler.PostTxHandler))
 		if handler != nil && handler.PostTxHandler != nil && isSideTxMsg {
 			msgResult := handler.PostTxHandler(ctx, msg, sideTxResult)
 

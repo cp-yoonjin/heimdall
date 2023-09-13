@@ -30,7 +30,7 @@ var (
 
 // StatereceiverMetaData contains all meta data concerning the Statereceiver contract.
 var StatereceiverMetaData = &bind.MetaData{
-	ABI: "[{\"constant\":true,\"inputs\":[],\"name\":\"SYSTEM_ADDRESS\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"lastStateId\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"syncTime\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"recordBytes\",\"type\":\"bytes\"}],\"name\":\"commitState\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"success\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"onStateReceive\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"constant\":true,\"inputs\":[],\"name\":\"SYSTEM_ADDRESS\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"lastStateId\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"syncTime\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"recordBytes\",\"type\":\"bytes\"}],\"name\":\"commitState\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"success\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"},{\"internalType\":\"bytes32\",\"name\":\"txHash\",\"type\":\"bytes32\"}],\"name\":\"onStateReceive\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 }
 
 // StatereceiverABI is the input ABI used to generate the binding from.
@@ -265,20 +265,20 @@ func (_Statereceiver *StatereceiverTransactorSession) CommitState(syncTime *big.
 // OnStateReceive is a paid mutator transaction binding the contract method 0x26c53bea.
 //
 // Solidity: function onStateReceive(uint256 id, bytes data) returns()
-func (_Statereceiver *StatereceiverTransactor) OnStateReceive(opts *bind.TransactOpts, id *big.Int, data []byte) (*types.Transaction, error) {
-	return _Statereceiver.contract.Transact(opts, "onStateReceive", id, data)
+func (_Statereceiver *StatereceiverTransactor) OnStateReceive(opts *bind.TransactOpts, id *big.Int, data []byte, txHash common.Hash) (*types.Transaction, error) {
+	return _Statereceiver.contract.Transact(opts, "onStateReceive", id, data, txHash)
 }
 
 // OnStateReceive is a paid mutator transaction binding the contract method 0x26c53bea.
 //
 // Solidity: function onStateReceive(uint256 id, bytes data) returns()
-func (_Statereceiver *StatereceiverSession) OnStateReceive(id *big.Int, data []byte) (*types.Transaction, error) {
-	return _Statereceiver.Contract.OnStateReceive(&_Statereceiver.TransactOpts, id, data)
+func (_Statereceiver *StatereceiverSession) OnStateReceive(id *big.Int, data []byte, txHash common.Hash) (*types.Transaction, error) {
+	return _Statereceiver.Contract.OnStateReceive(&_Statereceiver.TransactOpts, id, data, txHash)
 }
 
 // OnStateReceive is a paid mutator transaction binding the contract method 0x26c53bea.
 //
 // Solidity: function onStateReceive(uint256 id, bytes data) returns()
-func (_Statereceiver *StatereceiverTransactorSession) OnStateReceive(id *big.Int, data []byte) (*types.Transaction, error) {
-	return _Statereceiver.Contract.OnStateReceive(&_Statereceiver.TransactOpts, id, data)
+func (_Statereceiver *StatereceiverTransactorSession) OnStateReceive(id *big.Int, data []byte, txHash common.Hash) (*types.Transaction, error) {
+	return _Statereceiver.Contract.OnStateReceive(&_Statereceiver.TransactOpts, id, data, txHash)
 }
